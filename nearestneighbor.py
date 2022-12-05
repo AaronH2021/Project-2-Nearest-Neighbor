@@ -4,6 +4,92 @@ import math
 from math import floor
 from sys import maxsize
 
+#---------Driver-----------
+def driver():
+  print("Welcome to Aaron Hung's Feature Selection Algorithm.\n")
+
+  file_name = input("Type the name of the file to test: ") 
+
+  try: #try to open
+	  dataset = open(file_name, "r")
+  except: #fails if not found
+	  raise IOError(file_name + " Not found. Try again")
+
+  algorithm_prompt = "Type the number of the algorithm you want to run.\n"
+  algorithm_prompt += "\t1\tForward Selection\n"
+  algorithm_prompt += "\t2\tBackwards Elimination\n"
+  print(algorithm_prompt)
+
+  algorithm_choice = int(input()) 
+
+  #read the first full line of the data to get total size information
+  row1 = dataset.readline()
+
+  #the number of features is equal to the number of entries spearated by space -1 (the classifer)
+  total_features = len(row1.split()) - 1
+
+  #total number of instances = number of rows (plus row1)
+  total_instances = sum(1 for row in dataset) + 1
+
+  dataset.seek(0) #reset position back to the top of the file
+
+  #save un-normalized instances in an array format
+  original_instances = [] #create blank instance array
+  for i in range(total_instances):
+    original_instances.append([]) #create slots for each number of rows
+
+  for i in range(total_instances):
+    for j in dataset.readline().split(): #for every column
+      original_instances[i].append(float(j)) #fill each slot with row data
+
+  print("\nThis dataset has " + str(total_features) + " features (not including the class attribute), with " + str(total_instances) + " instances.\n")
+
+  print("Please wait while I normalize the data...")
+  normal_instances = z_score_normalize(original_instances, total_features, total_instances)
+  print("Done!\n")
+
+  if algorithm_choice == 1:
+    test_features = []
+    print("\nRunning nearest neighbor with no features (default rate), using \"leaving-one-out\" evaluation, I get an accuracy of " +  str(default_evaluation_function(normal_instances, total_features, total_instances)) + "%\n")
+    print("Beginning search.\n")
+    forward_selection(normal_instances, total_features, total_instances)
+  elif algorithm_choice == 2:
+    test_features = []
+    for i in range(0, total_features):
+      test_features.append(i)
+    print("\nRunning nearest neighbor with all features, using \"leaving-one-out\" evaluation, I get an accuracy of " +  str(evaluation_function(normal_instances, test_features, total_features, total_instances)) + "%\n")
+    print("Beginning search.\n")
+    backward_elimination(normal_instances, total_features, total_instances)
+  else:
+    print("Please try again and select an a valid algorithm option")
+    sys.exit(0)
+
+  return 0;
+#--------------------------
+
+#---Z Score Normalize function---
+def z_score_normalize(data, features, instances):
+  mean = [] #hold mean for each row
+  for instance in data: #for each row, save the mean of that row
+    mean.append(sum(instance)/instances)
+
+  std = [] #hold std
+  for instance in data:
+    sum1 = 0;
+    for i in range(0, features):
+      sum1 += pow((instance[i+1] - mean[i]), 2) #need to add one to instances as we skip the classifier in each row
+    var = sum1 / instances #get variance
+    std.append(math.sqrt(var)) #get and store standard deviation
+
+  #update dataset values in place
+  for i in range(0, instances):
+	  for j in range(0, features):
+		  data[i][j+1] = ((data[i][j+1] - mean[j]) / std[j]) #formula
+      #we add 1 to j as we want to skip the first value of the features, as it's the classifier
+
+  return data
+#--------------------------
+
 #---Nearest Neighbor function------------
 def nearest_neighbor(data, row_to_skip, test_features, features, instances):
   nearest_neighbor = 0
@@ -139,3 +225,7 @@ def backward_elimination(data, features, instances): #current backward eliminati
 
   print("Finished search!! The best feature subset is "+ str(best_features) + ", which has an accuracy of " + str(floor(best_accuracy*10)/10) + "%\n")
 #--------------------------
+
+if __name__ == "__main__":
+
+  driver() 
