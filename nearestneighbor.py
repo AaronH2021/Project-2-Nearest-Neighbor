@@ -50,14 +50,14 @@ def driver():
 
   if algorithm_choice == 1:
     test_features = []
-    print("\nRunning nearest neighbor with no features (default rate), using \"leaving-one-out\" evaluation, I get an accuracy of " +  str(default_evaluation_function(normal_instances, total_features, total_instances)) + "%\n")
+    print("\nRunning nearest neighbor with no features (default rate), using \"leaving-one-out\" evaluation, I get an accuracy of " +  str(floor(default_evaluation_function(normal_instances, total_features, total_instances))) + "%\n")
     print("Beginning search.\n")
     forward_selection(normal_instances, total_features, total_instances)
   elif algorithm_choice == 2:
     test_features = []
     for i in range(0, total_features):
       test_features.append(i)
-    print("\nRunning nearest neighbor with all features, using \"leaving-one-out\" evaluation, I get an accuracy of " +  str(evaluation_function(normal_instances, test_features, total_features, total_instances)) + "%\n")
+    print("\nRunning nearest neighbor with all features, using \"leaving-one-out\" evaluation, I get an accuracy of " +  str(floor(evaluation_function(normal_instances, test_features, total_features, total_instances))) + "%\n")
     print("Beginning search.\n")
     backward_elimination(normal_instances, total_features, total_instances)
   else:
